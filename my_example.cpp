@@ -198,33 +198,10 @@ int main(int argc, char* argv[]) {
 			sphereBody->SetBodyFixed(false);
 			sphereBody->SetPos(ChVector<double>(posx[i], posy[i], posz[i]));
 			sphereBody->GetMaterialSurface()->SetFriction(1.0f);
-			sphereBody->GetMaterialSurface()->SetRollingFriction(0.0105f);
-			sphereBody->GetMaterialSurface()->SetRestitution(.55f);
+			//sphereBody->GetMaterialSurface()->SetRollingFriction(0.0105f); //***TODO*** ->SetRollingFriction(0.01*radius[i]);
+			//sphereBody->GetMaterialSurface()->SetRestitution(.55f);
 			/*sphereBody->SetIdentifier(1);*/
 			mphysicalSystem.Add(sphereBody);
-			//auto mtexturesphere = std::make_shared<ChTexture>();
-			//mtexturesphere->SetTextureFilename(GetChronoDataFile("rock.jpg"));
-			//sphereBody->AddAsset(mtexturesphere);
-			/*auto ground = std::make_shared<ChBody>();
-			ground->SetBodyFixed(false);
-			ground->GetCollisionModel()->ClearModel();
-			ground->GetCollisionModel()->AddSphere(radius[i]);
-			ground->GetCollisionModel()->BuildModel();
-			ground->SetCollide(true);
-			double inertia= 2. / 5. * mass*pow(radius[i], 2);
-			ground->SetPos(ChVector<>(posx[i], posy[i], posz[i]));
-			ground->GetMaterialSurface()->SetFriction(1.05f);
-			ground->GetMaterialSurface()->SetRollingFriction(.0105f);
-			ground->GetMaterialSurface()->SetRestitution(.55f);
-			ground->SetMass(mass);
-			ground->SetInertiaXX(ChVector<>(inertia, inertia, inertia));
-			mphysicalSystem.Add(ground);
-			auto ground_sphere = std::make_shared<ChSphereShape>();
-			ground_sphere->GetSphereGeometry().center = ChVector<>(0, 0, 0);
-			ground_sphere->GetSphereGeometry().rad = radius[i];
-			ground_sphere->SetColor(ChColor(1.9f, 0.4f, 0.2f));
-			ground->AddAsset(ground_sphere);*/
-
 		}
 	}
 	//myfile0.close();
@@ -234,35 +211,48 @@ int main(int argc, char* argv[]) {
 
     // 3-Create MASCOT
 	
-	auto mascot = std::make_shared<ChBody>();
+	auto mascot = std::make_shared<ChBodyAuxRef>();
 	mascot->SetBodyFixed(false);
+
 	// Define a collision shape
 	mascot->GetCollisionModel()->ClearModel();
-	mascot->GetCollisionModel()->AddBox(0.2774 / 2., 0.1973 / 2., 0.2922 / 2., ChVector<>(0.01257, 0.00361, -0.00757));
+	mascot->GetCollisionModel()->AddBox(0.2774 / 2., 0.1973 / 2., 0.2922 / 2., ChVector<>(0, 0, 0)); //***TODO*** POS RESPECT TO REF!!
 	mascot->GetCollisionModel()->BuildModel();
 	mascot->SetCollide(true);
-	// Add body to system
-	mphysicalSystem.Add(mascot);
+
 	// ==Asset== attach a 'box' shape.
 	auto mascot_box = std::make_shared<ChBoxShape>();
 	mascot_box->GetBoxGeometry().Pos = ChVector<>(0, 0, 0);
 	mascot_box->GetBoxGeometry().Size = ChVector<>(0.2774 / 2, 0.1973 / 2, 0.2922 / 2);
 	mascot->AddAsset(mascot_box);
+
+
+    //// Optionally, attach a RGB color asset to the floor, for better visualization
+	auto color = std::make_shared<ChColorAsset>();
+	color->SetColor(ChColor(0.6f, 0.45f, 0.0f));
+	mascot->AddAsset(color);
+
 	ChMatrix33<> inertia;
 	inertia(0, 0) = 0.081026;
 	inertia(1, 1) = 0.10031;
 	inertia(2, 2) = 0.12116;
-	mascot->SetPos(ChVector<>(0, .26, 0));
-	mascot->SetPos_dt(ChVector<>(0, -.19, 0));
 	mascot->SetInertia(inertia);
 	mascot->SetMass(10);
 	mascot->GetMaterialSurface()->SetFriction(1.0f);
 	mascot->GetMaterialSurface()->SetRollingFriction(0.01f);
 	mascot->GetMaterialSurface()->SetRestitution(0.55f);
-	//// Optionally, attach a RGB color asset to the floor, for better visualization
-	auto color = std::make_shared<ChColorAsset>();
-	color->SetColor(ChColor(0.6f, 0.45f, 0.0f));
-	mascot->AddAsset(color);
+
+    mascot->SetFrame_REF_to_abs(ChFrame<>(ChVector<>(0, .26, 0))); // ***NOTE*** would be better than SetPos(), that in ChBodyAuxRef would pick the object by its COG
+    
+    ChVector<> my_COG_to_REF_offset(0.04, 0.04, 0.04);  // note: use AFTER SetFrame_REF_to_abs  ****NOTE*** UPDATE VALUES AS IN CAD
+    mascot->SetFrame_COG_to_REF(ChFrame<>( my_COG_to_REF_offset ));
+
+    mascot->SetPos_dt(ChVector<>(0, -.19, 0));
+    mascot->SetWvel_loc(ChVector<>(0, 0, 0));
+
+    // Add body to system
+	mphysicalSystem.Add(mascot);
+
 
     //======================================================================
 
@@ -275,12 +265,12 @@ int main(int argc, char* argv[]) {
 
     // Adjust some settings:
 	mphysicalSystem.SetIntegrationType(ChSystem::INT_EULER_IMPLICIT_LINEARIZED);
-	mphysicalSystem.SetLcpSolverType(ChSystem::LCP_ITERATIVE_BARZILAIBORWEIN);
-	mphysicalSystem.SetIterLCPmaxItersSpeed(150);
-	mphysicalSystem.SetIterLCPmaxItersStab(25);
+	mphysicalSystem.SetSolverType(ChSystem::SOLVER_BARZILAIBORWEIN);
+	mphysicalSystem.SetMaxItersSolverSpeed(150);
+	mphysicalSystem.SetMaxItersSolverStab(25);
 	mphysicalSystem.Set_G_acc(ChVector<>(0, -2.5e-4, 0));
 	mphysicalSystem.SetMinBounceSpeed(0.002);
-    application.SetTimestep(0.05);
+    application.SetTimestep(0.001);
     application.SetTryRealtime(true);
 	application.SetStepManage(true);
 
@@ -299,7 +289,13 @@ int main(int argc, char* argv[]) {
         // This performs the integration timestep!
         application.DoStep();
 
-		mphysicalSystem.ComputeCollisions();
+        // Trick to override initial contacts
+        if (application.GetSystem()->GetStepcount() == 1) {
+            mascot->SetPos_dt(ChVector<>(0, -.19, 0));
+            mascot->SetWvel_loc(ChVector<>(0, 0, 0));
+        }
+
+		//mphysicalSystem.ComputeCollisions();
 		ChVector<> W = mascot->GetWvel_loc();
 		ChVector<> V = mascot->GetPos_dt();
 		ChVector<> P = mascot->GetPos();
