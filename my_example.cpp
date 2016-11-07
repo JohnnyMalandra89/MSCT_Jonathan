@@ -189,8 +189,8 @@ int main(int argc, char* argv[]) {
 		double rz = posz[i];
 		double rc = sqrt(rx*rx + rz*rz);
 		if (posy[i] <= .10 && posy[i]>0 && rc<0.5) {
-			double volume = 4. / 3. * 3.14 * pow(radius[i], 3); // volume of the particle
-			double mass = density*volume; // mass of the particle
+			//double volume = 4. / 3. * 3.14 * pow(radius[i], 3); // volume of the particle
+			//double mass = density*volume; // mass of the particle
 			auto sphereBody = std::make_shared<ChBodyEasySphere>(radius[i],
 																density,
 																true,
