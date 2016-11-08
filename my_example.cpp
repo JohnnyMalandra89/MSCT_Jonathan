@@ -84,8 +84,8 @@ int main(int argc, char* argv[]) {
 	// Here I set up the parameters of the simulation for the collisions
 	//mphysicalSystem.SetMinBounceSpeed(0.005);
 	mphysicalSystem.SetMaxPenetrationRecoverySpeed(0.01);
-	ChCollisionModel::SetDefaultSuggestedEnvelope(0.00001);
-	ChCollisionModel::SetDefaultSuggestedMargin(0.0005);
+	ChCollisionModel::SetDefaultSuggestedEnvelope(0.001);
+	ChCollisionModel::SetDefaultSuggestedMargin(0.001);
 	double GLOBAL_max_simulation_time = 40.0;
 
     //
