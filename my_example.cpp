@@ -305,7 +305,7 @@ int main(int argc, char* argv[]) {
     mphysicalSystem.SetMaxItersSolverStab(25);
     mphysicalSystem.Set_G_acc(ChVector<>(0, -2.5e-4, 0));
     mphysicalSystem.SetMinBounceSpeed(0.002);
-    application.SetTimestep(0.001);
+    application.SetTimestep(0.005);
     application.SetTryRealtime(true);
     application.SetStepManage(true);
 
