@@ -105,8 +105,8 @@ int main(int argc, char* argv[]) {
     floorBody->SetBodyFixed(true);
     floorBody->GetMaterialSurface()->SetRestitution(0.55f);
     floorBody->GetMaterialSurface()->SetFriction(1.0f);
-    floorBody->GetMaterialSurface()->SetRollingFriction(.0105f);
-    floorBody->GetMaterialSurface()->SetSpinningFriction(.0105f);
+    //floorBody->GetMaterialSurface()->SetRollingFriction(.0105f);
+    //floorBody->GetMaterialSurface()->SetSpinningFriction(.0105f);
 
 
     mphysicalSystem.Add(floorBody);
@@ -126,7 +126,8 @@ int main(int argc, char* argv[]) {
         containerBody->SetBodyFixed(true);
         containerBody->GetMaterialSurface()->SetRestitution(0.55f);
         containerBody->GetMaterialSurface()->SetFriction(1.0f);
-        containerBody->GetMaterialSurface()->SetRollingFriction(.0105f);
+        //containerBody->GetMaterialSurface()->SetRollingFriction(.0105f);
+		//containerBody->GetMaterialSurface()->SetSpinningFriction(.0105f);
         mphysicalSystem.Add(containerBody);
         //auto mtexturecontainer = std::make_shared<ChTexture>();
         //mtexturecontainer->SetTextureFilename(GetChronoDataFile("rock.jpg"));
@@ -225,9 +226,9 @@ int main(int argc, char* argv[]) {
             sphereBody->SetBodyFixed(false);
             sphereBody->SetPos(ChVector<double>(pos_x, pos_y, pos_z));
             sphereBody->GetMaterialSurface()->SetFriction(1.0f);
-            //sphereBody->GetMaterialSurface()->SetRollingFriction(0.0105f); //***TODO*** ->SetRollingFriction(1.05*radius_temp);
-			//sphereBody->GetMaterialSurface()->SetRollingFriction(0.0105f); //***TODO*** ->SetSpinningFriction(1.05*radius_temp);
-            //sphereBody->GetMaterialSurface()->SetRestitution(.55f);
+   //         sphereBody->GetMaterialSurface()->SetRollingFriction(1.05*radius_temp); //***TODO*** ->SetRollingFriction(1.05*radius_temp);
+			//sphereBody->GetMaterialSurface()->SetSpinningFriction(1.05*radius_temp); //***TODO*** ->SetSpinningFriction(1.05*radius_temp);
+            sphereBody->GetMaterialSurface()->SetRestitution(.55f);
             /*sphereBody->SetIdentifier(1);*/
             mphysicalSystem.Add(sphereBody);
         }
@@ -246,8 +247,8 @@ int main(int argc, char* argv[]) {
     auto material_mascot = std::make_shared<ChMaterialSurface>();
     material_mascot->SetRestitution(0.55f);
     material_mascot->SetFriction(1.0f);
-    material_mascot->SetRollingFriction(.0105f);
-    material_mascot->SetSpinningFriction(.0105f);
+    //material_mascot->SetRollingFriction(.0105f);
+    //material_mascot->SetSpinningFriction(.0105f);
 
     // Define a collision shape
     ChVector<double> mascot_dimensions = { 0.2774 ,0.1973, 0.2922 };
@@ -276,7 +277,7 @@ int main(int argc, char* argv[]) {
     mascot->SetMass(10);
     mascot->SetMaterialSurface(material_mascot);
 
-    mascot->SetFrame_REF_to_abs(ChFrame<>(ChVector<>(0, .5, 0))); // ***NOTE*** would be better than SetPos(), that in ChBodyAuxRef would pick the object by its COG
+    mascot->SetFrame_REF_to_abs(ChFrame<>(ChVector<>(0, .43, 0))); // ***NOTE*** would be better than SetPos(), that in ChBodyAuxRef would pick the object by its COG
 
     ChVector<> my_COG_to_REF_offset(0.01257, 0.00296, -0.00757);  // note: use AFTER SetFrame_REF_to_abs  ****NOTE*** UPDATE VALUES AS IN CAD
     mascot->SetFrame_COG_to_REF(ChFrame<>(my_COG_to_REF_offset));
@@ -300,7 +301,7 @@ int main(int argc, char* argv[]) {
     // Adjust some settings:
     mphysicalSystem.SetIntegrationType(ChSystem::INT_EULER_IMPLICIT_LINEARIZED);
     mphysicalSystem.SetSolverType(ChSystem::SOLVER_BARZILAIBORWEIN);
-    mphysicalSystem.SetMaxItersSolverSpeed(150);
+	mphysicalSystem.SetMaxItersSolverSpeed(60);
     mphysicalSystem.SetMaxItersSolverStab(25);
     mphysicalSystem.Set_G_acc(ChVector<>(0, -2.5e-4, 0));
     mphysicalSystem.SetMinBounceSpeed(0.002);
