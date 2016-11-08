@@ -84,9 +84,9 @@ int main(int argc, char* argv[]) {
                                                              // Here I set up the parameters of the simulation for the collisions
                                                              //mphysicalSystem.SetMinBounceSpeed(0.005);
     mphysicalSystem.SetMaxPenetrationRecoverySpeed(0.01);
-    ChCollisionModel::SetDefaultSuggestedEnvelope(0.00001);
-    ChCollisionModel::SetDefaultSuggestedMargin(0.0005);
-    double GLOBAL_max_simulation_time = 40.0;
+    ChCollisionModel::SetDefaultSuggestedEnvelope(0.001);
+    ChCollisionModel::SetDefaultSuggestedMargin(0.001);
+    double GLOBAL_max_simulation_time = 20.0;
 
 
 
@@ -117,12 +117,12 @@ int main(int argc, char* argv[]) {
     color_floor->SetColor(ChColor(2.0f, 0.05f, 0.0f));
     floorBody->AddAsset(color_floor);
 
-    for (int i = 0; i < 361; i++) {
+    for (int i = 0; i < 180; i++) {
         auto containerBody = std::make_shared<ChBodyEasyBox>(.03, .15, .03,
                                                              1700,
                                                              true,
                                                              false);
-        containerBody->SetPos(ChVector<>(.51775*cos(i*CH_C_DEG_TO_RAD), .075, .51775*sin(i*CH_C_DEG_TO_RAD)));
+        containerBody->SetPos(ChVector<>(.775*cos(i*CH_C_DEG_TO_RAD*2), .075, .775*sin(i*CH_C_DEG_TO_RAD*2)));
         containerBody->SetBodyFixed(true);
         containerBody->GetMaterialSurface()->SetRestitution(0.55f);
         containerBody->GetMaterialSurface()->SetFriction(1.0f);
@@ -144,7 +144,10 @@ int main(int argc, char* argv[]) {
                         //double volume = 4 / 3 * 3.14 * pow(radius,3); // volume of the particle
                         //double mass = density*volume; // mass of the particle
                         //const int nspheres = 688;
-    const int nspheres = 5e4;
+    int nspheres;
+
+	cout << "Enter the number of particles: \n";
+	cin >> nspheres;
     //double posx[nspheres];
     //ifstream readin1("X1cm.txt");
     //assert(readin1.is_open());
@@ -222,7 +225,8 @@ int main(int argc, char* argv[]) {
             sphereBody->SetBodyFixed(false);
             sphereBody->SetPos(ChVector<double>(pos_x, pos_y, pos_z));
             sphereBody->GetMaterialSurface()->SetFriction(1.0f);
-            //sphereBody->GetMaterialSurface()->SetRollingFriction(0.0105f); //***TODO*** ->SetRollingFriction(0.01*radius[i]);
+            //sphereBody->GetMaterialSurface()->SetRollingFriction(0.0105f); //***TODO*** ->SetRollingFriction(1.05*radius_temp);
+			//sphereBody->GetMaterialSurface()->SetRollingFriction(0.0105f); //***TODO*** ->SetSpinningFriction(1.05*radius_temp);
             //sphereBody->GetMaterialSurface()->SetRestitution(.55f);
             /*sphereBody->SetIdentifier(1);*/
             mphysicalSystem.Add(sphereBody);
@@ -248,7 +252,7 @@ int main(int argc, char* argv[]) {
     // Define a collision shape
     ChVector<double> mascot_dimensions = { 0.2774 ,0.1973, 0.2922 };
     mascot->GetCollisionModel()->ClearModel();
-    mascot->GetCollisionModel()->AddBox(mascot_dimensions(1) / 2., mascot_dimensions(1) / 2., mascot_dimensions(3) / 2., ChVector<>(0, 0, 0)); //***TODO*** POS RESPECT TO REF!!
+    mascot->GetCollisionModel()->AddBox(mascot_dimensions(0) / 2., mascot_dimensions(1) / 2., mascot_dimensions(3) / 2., ChVector<>(0, 0, 0)); //***TODO*** POS RESPECT TO REF!!
     mascot->GetCollisionModel()->BuildModel();
     mascot->SetCollide(true);
 
@@ -264,17 +268,17 @@ int main(int argc, char* argv[]) {
     color->SetColor(ChColor(0.6f, 0.45f, 0.0f));
     mascot->AddAsset(color);
 
-    ChMatrix33<> inertia;
-    inertia(0, 0) = 0.081026;
-    inertia(1, 1) = 0.10031;
-    inertia(2, 2) = 0.12116;
-    mascot->SetInertia(inertia);
+	ChMatrix33<> inertia;
+	inertia(0, 0) = 0.099; inertia(0, 1) = -0.0051; inertia(0, 2) = 0.0019;
+	inertia(1, 0) = -0.0051; inertia(1, 1) = 0.0825; inertia(1, 2) = 0.0005;
+	inertia(2, 0) = 0.0019; inertia(2, 1) = 0.0005; inertia(2, 2) = 0.121;
+	mascot->SetInertia(inertia);
     mascot->SetMass(10);
     mascot->SetMaterialSurface(material_mascot);
 
-    mascot->SetFrame_REF_to_abs(ChFrame<>(ChVector<>(0, .26, 0))); // ***NOTE*** would be better than SetPos(), that in ChBodyAuxRef would pick the object by its COG
+    mascot->SetFrame_REF_to_abs(ChFrame<>(ChVector<>(0, .5, 0))); // ***NOTE*** would be better than SetPos(), that in ChBodyAuxRef would pick the object by its COG
 
-    ChVector<> my_COG_to_REF_offset(0.04, 0.04, 0.04);  // note: use AFTER SetFrame_REF_to_abs  ****NOTE*** UPDATE VALUES AS IN CAD
+    ChVector<> my_COG_to_REF_offset(0.01257, 0.00296, -0.00757);  // note: use AFTER SetFrame_REF_to_abs  ****NOTE*** UPDATE VALUES AS IN CAD
     mascot->SetFrame_COG_to_REF(ChFrame<>(my_COG_to_REF_offset));
 
     mascot->SetPos_dt(ChVector<>(0, -.19, 0));
