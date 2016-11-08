@@ -12,13 +12,20 @@
 // A very simple example that can be used as template project for
 // a Chrono::Engine simulator with 3D view.
 
+// Change this flag to 1 or 0 to enable/disable Irrlicht 3D viewing window
+#define USE_IRRLICHT 1
+
+// Change this flag to 1 or 0 to enable/disable cast shadows in 3D view (warning, may be slower)
+#define USE_SHADOWS 1
+
+
+
 #include "chrono/physics/ChSystem.h"
 #include "chrono/physics/ChBodyEasy.h"
 #include "chrono/physics/ChLinkMate.h"
 #include "chrono/physics/ChMaterialSurface.h"
 #include "chrono/assets/ChTexture.h"
 #include "chrono/assets/ChColorAsset.h"
-#include "chrono_irrlicht/ChIrrApp.h"
 #include "chrono/collision/ChCCollisionInfo.h"
 #include "chrono/physics/ChParticlesClones.h"
 #include "chrono/serialization/ChArchive.h"
@@ -40,22 +47,30 @@
 #include <functional> 
 #include <cctype>
 #include <cmath>
+#if USE_IRRLICHT
+ #include "chrono_irrlicht/ChIrrApp.h"
+#endif 
 
 // Use the namespace of Chrono
 
 using namespace chrono;
 using namespace chrono::collision;
-using namespace chrono::irrlicht;
 using namespace std;
 
 // Use the main namespaces of Irrlicht
-
+#if USE_IRRLICHT
+using namespace chrono::irrlicht;
 using namespace irr;
 using namespace irr::core;
 using namespace irr::scene;
 using namespace irr::video;
 using namespace irr::io;
 using namespace irr::gui;
+#endif
+
+
+
+
 
 int main(int argc, char* argv[]) {
     // Set path to Chrono data directory
@@ -64,30 +79,38 @@ int main(int argc, char* argv[]) {
     // Create a Chrono physical system
     ChSystem mphysicalSystem;
 
-    // Create the Irrlicht visualization (open the Irrlicht device,
-    // bind a simple user interface, etc. etc.)
-    ChIrrApp application(&mphysicalSystem, L"A simple project template", core::dimension2d<u32>(800, 600),
-                         false);  // screen dimensions
+    #if USE_IRRLICHT
+        // Create the Irrlicht visualization (open the Irrlicht device,
+        // bind a simple user interface, etc. etc.)
+        ChIrrApp application(&mphysicalSystem, L"A simple project template", core::dimension2d<u32>(800, 600),
+                             false);  // screen dimensions
 
-                                  // Easy shortcuts to add camera, lights, logo and sky in Irrlicht scene:
-    application.AddTypicalLogo();
-    application.AddTypicalSky();
-    application.AddTypicalLights();
-    application.AddTypicalCamera(core::vector3df(2, 2, -5),
-                                 core::vector3df(0, 1, 0));  // to change the position of camera
-                                                             // application.AddLightWithShadow(vector3df(1,25,-5), vector3df(0,0,0), 35, 0.2,35, 55, 512, video::SColorf(1,1,1));
+                                      // Easy shortcuts to add camera, lights, logo and sky in Irrlicht scene:
+        application.AddTypicalLogo();
+        application.AddTypicalSky();
+        application.AddTypicalLights();
+        application.AddTypicalCamera(core::vector3df(-0.5, 0.5, 1.5),
+                                     core::vector3df(0, 0.5, 0));// to change the position of camera
+                                                                 // application.AddLightWithShadow(vector3df(1,25,-5), vector3df(0,0,0), 35, 0.2,35, 55, 512, video::SColorf(1,1,1));
 
-                                                             //======================================================================
+                                                                 //======================================================================
 
-                                                             // HERE YOU CAN POPULATE THE PHYSICAL SYSTEM WITH BODIES AND LINKS.
+                                                                 // HERE YOU CAN POPULATE THE PHYSICAL SYSTEM WITH BODIES AND LINKS.
 
-                                                             // Here I set up the parameters of the simulation for the collisions
-                                                             //mphysicalSystem.SetMinBounceSpeed(0.005);
+                                                                 // Here I set up the parameters of the simulation for the collisions
+                                                                 //mphysicalSystem.SetMinBounceSpeed(0.005);
+        #if USE_SHADOWS
+        application.AddLightWithShadow(vector3df(-1.5, 2.0, 0.5), vector3df(0, 0, 0), 3, 0.5, 3.2, 47, 512,
+                                       video::SColorf(1.6, 1.6, 1.6));
+        #endif
+
+    #endif USE_IRRLICHT
+
     mphysicalSystem.SetMaxPenetrationRecoverySpeed(0.01);
     ChCollisionModel::SetDefaultSuggestedEnvelope(0.001);
     ChCollisionModel::SetDefaultSuggestedMargin(0.001);
     double GLOBAL_max_simulation_time = 20.0;
-
+    double GLOBAL_timestep = 0.005;
 
 
     // 1-Build the container which is cylindrical h=0.4m and radius=0.75m and the floor.
@@ -105,8 +128,8 @@ int main(int argc, char* argv[]) {
     floorBody->SetBodyFixed(true);
     floorBody->GetMaterialSurface()->SetRestitution(0.55f);
     floorBody->GetMaterialSurface()->SetFriction(1.0f);
-    //floorBody->GetMaterialSurface()->SetRollingFriction(.0105f);
-    //floorBody->GetMaterialSurface()->SetSpinningFriction(.0105f);
+    floorBody->GetMaterialSurface()->SetRollingFriction(.0105f);
+    floorBody->GetMaterialSurface()->SetSpinningFriction(.0105f);
 
 
     mphysicalSystem.Add(floorBody);
@@ -126,8 +149,8 @@ int main(int argc, char* argv[]) {
         containerBody->SetBodyFixed(true);
         containerBody->GetMaterialSurface()->SetRestitution(0.55f);
         containerBody->GetMaterialSurface()->SetFriction(1.0f);
-        //containerBody->GetMaterialSurface()->SetRollingFriction(.0105f);
-		//containerBody->GetMaterialSurface()->SetSpinningFriction(.0105f);
+        containerBody->GetMaterialSurface()->SetRollingFriction(.0105f);
+		containerBody->GetMaterialSurface()->SetSpinningFriction(.0105f);
         mphysicalSystem.Add(containerBody);
         //auto mtexturecontainer = std::make_shared<ChTexture>();
         //mtexturecontainer->SetTextureFilename(GetChronoDataFile("rock.jpg"));
@@ -226,8 +249,8 @@ int main(int argc, char* argv[]) {
             sphereBody->SetBodyFixed(false);
             sphereBody->SetPos(ChVector<double>(pos_x, pos_y, pos_z));
             sphereBody->GetMaterialSurface()->SetFriction(1.0f);
-   //         sphereBody->GetMaterialSurface()->SetRollingFriction(1.05*radius_temp); //***TODO*** ->SetRollingFriction(1.05*radius_temp);
-			//sphereBody->GetMaterialSurface()->SetSpinningFriction(1.05*radius_temp); //***TODO*** ->SetSpinningFriction(1.05*radius_temp);
+            sphereBody->GetMaterialSurface()->SetRollingFriction(1.05*radius_temp); 
+			sphereBody->GetMaterialSurface()->SetSpinningFriction(1.05*radius_temp); 
             sphereBody->GetMaterialSurface()->SetRestitution(.55f);
             /*sphereBody->SetIdentifier(1);*/
             mphysicalSystem.Add(sphereBody);
@@ -247,8 +270,8 @@ int main(int argc, char* argv[]) {
     auto material_mascot = std::make_shared<ChMaterialSurface>();
     material_mascot->SetRestitution(0.55f);
     material_mascot->SetFriction(1.0f);
-    //material_mascot->SetRollingFriction(.0105f);
-    //material_mascot->SetSpinningFriction(.0105f);
+    material_mascot->SetRollingFriction(.0105f);
+    material_mascot->SetSpinningFriction(.0105f);
 
     // Define a collision shape
     ChVector<double> mascot_dimensions = { 0.2774 ,0.1973, 0.2922 };
@@ -291,12 +314,6 @@ int main(int argc, char* argv[]) {
 
     //======================================================================
 
-    // Use this function for adding a ChIrrNodeAsset to all items
-    // Otherwise use application.AssetBind(myitem); on a per-item basis.
-    application.AssetBindAll();
-
-    // Use this function for 'converting' assets into Irrlicht meshes
-    application.AssetUpdateAll();
 
     // Adjust some settings:
     mphysicalSystem.SetIntegrationType(ChSystem::INT_EULER_IMPLICIT_LINEARIZED);
@@ -305,46 +322,80 @@ int main(int argc, char* argv[]) {
     mphysicalSystem.SetMaxItersSolverStab(25);
     mphysicalSystem.Set_G_acc(ChVector<>(0, -2.5e-4, 0));
     mphysicalSystem.SetMinBounceSpeed(0.002);
-    application.SetTimestep(0.001);
-    application.SetTryRealtime(true);
-    application.SetStepManage(true);
+
+
+    ofstream myfile4;
+    myfile4.open("data.txt"); // to save angular and linear speed and the position of MASCOT
+
 
     //
     // THE SOFT-REAL-TIME CYCLE
     //
 
-    ofstream myfile4;
-    myfile4.open("data.txt"); // to save angular and linear speed and the position of MASCOT
 
-    while (application.GetDevice()->run()) {
-        application.BeginScene();
+    #if USE_IRRLICHT
 
-        application.DrawAll();
+        application.SetTimestep(GLOBAL_timestep);
+        application.SetTryRealtime(true);
+        application.SetStepManage(true);
 
-        // This performs the integration timestep!
-        application.DoStep();
+        // Use this function for adding a ChIrrNodeAsset to all items
+        // Otherwise use application.AssetBind(myitem); on a per-item basis.
+        application.AssetBindAll();
 
-        // Trick to override initial contacts
-        if (application.GetSystem()->GetStepcount() == 1) {
-            mascot->SetPos_dt(ChVector<>(0, -.19, 0));
-            mascot->SetWvel_loc(ChVector<>(0, 0, 0));
+        // Use this function for 'converting' assets into Irrlicht meshes
+        application.AssetUpdateAll();
+
+        #if USE_SHADOWS
+        // This is to enable shadow maps (shadow casting with soft shadows) in Irrlicht
+        // for all objects (or use application.AddShadow(..) for enable shadow on a per-item basis)
+        application.AddShadowAll();
+        #endif USE_SHADOWS
+
+        while (application.GetDevice()->run()) {
+            application.BeginScene();
+
+            application.DrawAll();
+
+            // This performs the integration timestep!
+            application.DoStep();
+
+            ChVector<> W = mascot->GetWvel_loc();
+            ChVector<> V = mascot->GetPos_dt();
+            ChVector<> P = mascot->GetPos();
+            double t = mphysicalSystem.GetChTime();
+            myfile4 << t << "," << W(0) << "," << W(1) << "," << W(2) << "," << V(0) << "," << V(1) << "," << V(2) << "," << P(0) << "," << P(1) << "," << P(2) << endl;
+            cout << mphysicalSystem.GetChTime() << endl;
+
+            if (mphysicalSystem.GetChTime() > GLOBAL_max_simulation_time) {
+
+                application.GetDevice()->closeDevice();
+            }
+
+            application.EndScene();
+        }
+    
+    #else
+
+        while(mphysicalSystem.GetChTime() < GLOBAL_max_simulation_time) {
+            
+            mphysicalSystem.DoStepDynamics(GLOBAL_timestep);
+
+            ChVector<> W = mascot->GetWvel_loc();
+            ChVector<> V = mascot->GetPos_dt();
+            ChVector<> P = mascot->GetPos();
+            double t = mphysicalSystem.GetChTime();
+            myfile4 << t << "," << W(0) << "," << W(1) << "," << W(2) << "," << V(0) << "," << V(1) << "," << V(2) << "," << P(0) << "," << P(1) << "," << P(2) << endl;
+            cout << mphysicalSystem.GetChTime() << endl;
+
         }
 
-        //mphysicalSystem.ComputeCollisions();
-        ChVector<> W = mascot->GetWvel_loc();
-        ChVector<> V = mascot->GetPos_dt();
-        ChVector<> P = mascot->GetPos();
-        double t = mphysicalSystem.GetChTime();
-        myfile4 << t << "," << W(0) << "," << W(1) << "," << W(2) << "," << V(0) << "," << V(1) << "," << V(2) << "," << P(0) << "," << P(1) << "," << P(2) << endl;
-        cout << mphysicalSystem.GetChTime() << endl;
 
-        if (mphysicalSystem.GetChTime() > GLOBAL_max_simulation_time) {
+    #endif USE_IRRLICHT
 
-            application.GetDevice()->closeDevice();
-        }
+   
 
-        application.EndScene();
-    }
+    
     myfile4.close();
     return 0;
 }
