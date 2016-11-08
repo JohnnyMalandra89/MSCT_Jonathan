@@ -233,16 +233,16 @@ int main(int argc, char* argv[]) {
 	mascot->AddAsset(color);
 
 	ChMatrix33<> inertia;
-	inertia(0, 0) = 0.081026;
-	inertia(1, 1) = 0.10031;
-	inertia(2, 2) = 0.12116;
+	inertia(0, 0) = 0.099; inertia(0, 1) = -0.0051; inertia(0, 2) = 0.0019;
+	inertia(1, 0) = -0.0051; inertia(1, 1) = 0.0825; inertia(1, 2) = 0.0005;
+	inertia(2, 0) = 0.0019; inertia(2, 1) = 0.0005; inertia(2, 2) = 0.121;
 	mascot->SetInertia(inertia);
 	mascot->SetMass(10);
 	mascot->GetMaterialSurface()->SetFriction(1.0f);
 	mascot->GetMaterialSurface()->SetRollingFriction(0.01f);
 	mascot->GetMaterialSurface()->SetRestitution(0.55f);
 
-    mascot->SetFrame_REF_to_abs(ChFrame<>(ChVector<>(0, .26, 0))); // ***NOTE*** would be better than SetPos(), that in ChBodyAuxRef would pick the object by its COG
+    mascot->SetFrame_REF_to_abs(ChFrame<>(ChVector<>(0, .5, 0))); // ***NOTE*** would be better than SetPos(), that in ChBodyAuxRef would pick the object by its COG
     
     ChVector<> my_COG_to_REF_offset(0.04, 0.04, 0.04);  // note: use AFTER SetFrame_REF_to_abs  ****NOTE*** UPDATE VALUES AS IN CAD
     mascot->SetFrame_COG_to_REF(ChFrame<>( my_COG_to_REF_offset ));
