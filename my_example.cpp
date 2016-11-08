@@ -109,12 +109,12 @@ int main(int argc, char* argv[]) {
 	color_floor->SetColor(ChColor(2.0f, 0.05f, 0.0f));
 	floorBody->AddAsset(color_floor);
 
-	for (int i = 0; i < 361; i++) {
+	for (int i = 0; i < 180; i++) {
 		auto containerBody = std::make_shared<ChBodyEasyBox>(.03, .15, .03,
 															1700,
 															true,
 															false);
-		containerBody->SetPos(ChVector<>(.51775*cos(i*CH_C_DEG_TO_RAD), .075, .51775*sin(i*CH_C_DEG_TO_RAD)));
+		containerBody->SetPos(ChVector<>(.775*cos(i*CH_C_DEG_TO_RAD*2), .075, .775*sin(i*CH_C_DEG_TO_RAD*2)));
 		containerBody->SetBodyFixed(true);
 		containerBody->GetMaterialSurface()->SetRestitution(0.55f);
 		containerBody->GetMaterialSurface()->SetFriction(1.0f);
