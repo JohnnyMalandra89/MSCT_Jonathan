@@ -98,6 +98,9 @@ endif()
 
 add_executable(myexe my_example.cpp)
 
+add_executable(myterrain my_terrain_maker.cpp)
+
+
 #--------------------------------------------------------------
 # Set properties for your executable target
 # 
@@ -112,11 +115,18 @@ set_target_properties(myexe PROPERTIES
 	    COMPILE_DEFINITIONS "CHRONO_DATA_DIR=\"${CHRONO_DATA_DIR}\""
 	    LINK_FLAGS "${CHRONO_LINKER_FLAGS}")
 
+set_target_properties(myterrain PROPERTIES 
+	    COMPILE_FLAGS "${CHRONO_CXX_FLAGS} ${EXTRA_COMPILE_FLAGS}"
+	    COMPILE_DEFINITIONS "CHRONO_DATA_DIR=\"${CHRONO_DATA_DIR}\""
+	    LINK_FLAGS "${CHRONO_LINKER_FLAGS}")
+
 #--------------------------------------------------------------
 # Link to Chrono libraries and dependency libraries
 #--------------------------------------------------------------
 
 target_link_libraries(myexe ${CHRONO_LIBRARIES})
+
+target_link_libraries(myterrain ${CHRONO_LIBRARIES})
 
 #--------------------------------------------------------------
 # === 4 (OPTIONAL) ===
