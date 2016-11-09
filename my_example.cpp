@@ -227,7 +227,8 @@ int main(int argc, char* argv[]) {
     ifstream readin1("X1cm.txt");
 
 
-
+    bool do_spheres = false;
+    bool do_hulls = true;
     double radius_temp = 0;
     double pos_x, pos_y, pos_z;
     for (int i = 0; i < nspheres; i++) { // to eliminate particles out of the cylinder
@@ -240,20 +241,43 @@ int main(int argc, char* argv[]) {
         double rz = pos_z;
         double rc = sqrt(rx*rx + rz*rz);
         if (pos_y <= .30 && pos_y>0 && rc<0.75) {
-            //double volume = 4. / 3. * 3.14 * pow(radius[i], 3); // volume of the particle
-            //double mass = density*volume; // mass of the particle
-            auto sphereBody = std::make_shared<ChBodyEasySphere>(radius_temp,
-                                                                 density,
-                                                                 true,
-                                                                 true);
-            sphereBody->SetBodyFixed(false);
-            sphereBody->SetPos(ChVector<double>(pos_x, pos_y, pos_z));
-            sphereBody->GetMaterialSurface()->SetFriction(1.0f);
-            sphereBody->GetMaterialSurface()->SetRollingFriction(1.05*radius_temp); 
-			sphereBody->GetMaterialSurface()->SetSpinningFriction(1.05*radius_temp); 
-            sphereBody->GetMaterialSurface()->SetRestitution(.55f);
-            /*sphereBody->SetIdentifier(1);*/
-            mphysicalSystem.Add(sphereBody);
+            if (do_spheres) {
+                //double volume = 4. / 3. * 3.14 * pow(radius[i], 3); // volume of the particle
+                //double mass = density*volume; // mass of the particle
+                auto sphereBody = std::make_shared<ChBodyEasySphere>(radius_temp,
+                                                                     density,
+                                                                     true,
+                                                                     true);
+                sphereBody->SetBodyFixed(false);
+                sphereBody->SetPos(ChVector<double>(pos_x, pos_y, pos_z));
+                sphereBody->GetMaterialSurface()->SetFriction(1.0f);
+                sphereBody->GetMaterialSurface()->SetRollingFriction(1.05*radius_temp); 
+			    sphereBody->GetMaterialSurface()->SetSpinningFriction(1.05*radius_temp); 
+                sphereBody->GetMaterialSurface()->SetRestitution(.55f);
+                /*sphereBody->SetIdentifier(1);*/
+                mphysicalSystem.Add(sphereBody);
+            }
+            if (do_hulls) {
+                // Randomize n points as vertexes of a polytope (or read them from a file?)
+                std::vector<ChVector<>> vertexes(16);
+                for (int iv = 0; iv<vertexes.size(); ++iv) {
+                    vertexes[iv] = ChVector<>(
+                        ((ChRandom()*2)-1.0) * radius_temp,
+                        ((ChRandom()*2)-1.0) * radius_temp,
+                        ((ChRandom()*2)-1.0) * radius_temp
+                        ); 
+                }
+                auto sphereBody = std::make_shared<ChBodyEasyConvexHull>(vertexes,
+                                                                     density,
+                                                                     true,
+                                                                     true);
+                sphereBody->SetBodyFixed(false);
+                sphereBody->SetPos(ChVector<double>(pos_x, pos_y, pos_z));
+                sphereBody->GetMaterialSurface()->SetFriction(1.0f);
+                sphereBody->GetMaterialSurface()->SetRestitution(.55f);
+                /*sphereBody->SetIdentifier(1);*/
+                mphysicalSystem.Add(sphereBody);
+            }
         }
     }
     //myfile0.close();
